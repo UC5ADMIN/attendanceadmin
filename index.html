@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance Admin</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #f5f3ee;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --border: rgba(0,0,0,0.08);
+    --accent: #1a1a2e;
+    --accent2: #c8a96e;
+    --text: #1a1a2e;
+    --muted: #7a7a8a;
+    --green: #2d6a4f;
+    --green-bg: #eaf4ee;
+    --red: #c0392b;
+    --red-bg: #fdf0ee;
+    --amber: #7d5a1e;
+    --amber-bg: #fdf6e3;
+    --font-display: 'DM Serif Display', Georgia, serif;
+    --font-body: 'DM Sans', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .shell { max-width: 720px; margin: 0 auto; }
+
+  /* Header */
+  .header { text-align: center; margin-bottom: 2.5rem; }
+  .header-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--accent2);
+    border: 1px solid var(--accent2); border-radius: 20px;
+    padding: 4px 12px; margin-bottom: 0.75rem;
+  }
+  .header h1 { font-family: var(--font-display); font-size: 2.2rem; font-weight: 400; line-height: 1.1; color: var(--accent); }
+  .header p  { font-size: 0.85rem; color: var(--muted); margin-top: 0.4rem; }
+
+  /* Cards */
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.75rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    margin-bottom: 1.25rem;
+  }
+
+  .card-title {
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 1.25rem;
+  }
+
+  /* Form elements */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  .form-row.single { grid-template-columns: 1fr; }
+
+  .field label {
+    display: block; font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 0.4rem;
+  }
+
+  .field select, .field input {
+    width: 100%; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-size: 0.95rem;
+    padding: 0.7rem 1rem; font-family: var(--font-body);
+    appearance: none; -webkit-appearance: none; outline: none;
+    transition: border-color 0.15s;
+  }
+  .field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237a7a8a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; cursor: pointer; }
+  .field select:focus, .field input:focus { border-color: var(--accent2); }
+  .field input[type="password"] { letter-spacing: 0.25em; }
+
+  /* Buttons */
+  .btn {
+    width: 100%; padding: 0.85rem; border-radius: 10px; border: none;
+    font-size: 0.95rem; font-weight: 600; font-family: var(--font-body);
+    cursor: pointer; transition: opacity 0.15s, transform 0.1s; letter-spacing: 0.01em;
+  }
+  .btn:active { transform: scale(0.98); opacity: 0.85; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-gold    { background: var(--accent2); color: #fff; }
+  .btn-outline { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+
+  /* Alerts */
+  .alert { padding: 0.7rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; margin-top: 0.75rem; text-align: center; }
+  .alert-err  { background: var(--red-bg);   color: var(--red); }
+  .alert-ok   { background: var(--green-bg); color: var(--green); }
+
+  /* Stat cards */
+  .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
+  .stat-card {
+    background: var(--bg); border-radius: 12px; padding: 1rem 1.1rem;
+    border: 1px solid var(--border);
+  }
+  .stat-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.3rem; }
+  .stat-value { font-family: var(--font-display); font-size: 2rem; font-weight: 400; line-height: 1; }
+  .stat-sub   { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
+  .stat-present { color: var(--green); }
+  .stat-absent  { color: var(--red); }
+  .stat-hours   { color: var(--accent); }
+  .stat-avg     { color: var(--amber); }
+
+  /* Day table */
+  .report-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;
+  }
+  .report-title { font-family: var(--font-display); font-size: 1.4rem; font-weight: 400; }
+  .report-sub   { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th {
+    text-align: left; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.09em;
+    text-transform: uppercase; color: var(--muted); padding: 0 0.5rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 0.6rem 0.5rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+
+  .status-pill {
+    display: inline-block; font-size: 0.7rem; font-weight: 600;
+    padding: 2px 9px; border-radius: 20px;
+  }
+  .pill-present    { background: var(--green-bg); color: var(--green); }
+  .pill-absent     { background: var(--red-bg);   color: var(--red); }
+  .pill-incomplete { background: var(--amber-bg); color: var(--amber); }
+
+  /* Utility */
+  .hidden { display: none !important; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .text-center { text-align: center; }
+  .mt1 { margin-top: 0.75rem; }
+
+  /* Print/PDF styles */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .no-print { display: none !important; }
+    .card { box-shadow: none; border: 1px solid #ddd; }
+    .btn { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="header">
+    <div class="header-badge">⚙ Admin Portal</div>
+    <h1>Attendance Reports</h1>
+    <p>UC5 Ratnagiri · Owner Access Only</p>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="screen-dashboard">
+
+    <!-- Controls -->
+    <div class="card no-print">
+      <div class="card-title">Generate Report</div>
+      <div class="form-row">
+        <div class="field">
+          <label>Staff Member</label>
+          <select id="sel-staff"><option value="">— Select —</option></select>
+        </div>
+        <div class="field">
+          <label>Month</label>
+          <select id="sel-month">
+            <option value="01">January</option><option value="02">February</option>
+            <option value="03">March</option><option value="04">April</option>
+            <option value="05">May</option><option value="06">June</option>
+            <option value="07">July</option><option value="08">August</option>
+            <option value="09">September</option><option value="10">October</option>
+            <option value="11">November</option><option value="12">December</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="field">
+          <label>Year</label>
+          <select id="sel-year"></select>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="generateReport()" id="btn-generate">Generate Report</button>
+      <div id="report-alert" class="hidden"></div>
+    </div>
+
+    <!-- Report Output -->
+    <div id="report-output" class="hidden">
+
+      <div class="card">
+        <div class="report-header">
+          <div>
+            <div class="report-title" id="rpt-name">—</div>
+            <div class="report-sub" id="rpt-period">—</div>
+          </div>
+          <button class="btn btn-gold no-print" style="width:auto;padding:0.6rem 1.2rem;font-size:0.85rem" onclick="downloadPDF()">
+            ↓ Download PDF
+          </button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Days Present</div>
+            <div class="stat-value stat-present" id="rpt-present">—</div>
+            <div class="stat-sub" id="rpt-present-sub"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Days Absent</div>
+            <div class="stat-value stat-absent" id="rpt-absent">—</div>
+            <div class="stat-sub" id="rpt-absent-sub"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Hours Worked</div>
+            <div class="stat-value stat-hours" id="rpt-total">—</div>
+            <div class="stat-sub">this month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Avg Hours / Day</div>
+            <div class="stat-value stat-avg" id="rpt-avg">—</div>
+            <div class="stat-sub">on days present</div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <table id="rpt-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Clock In</th>
+              <th>Clock Out</th>
+              <th>Hours</th>
+            </tr>
+          </thead>
+          <tbody id="rpt-body"></tbody>
+        </table>
+
+        <div id="rpt-empty" class="hidden text-center" style="padding:2rem;color:var(--muted);font-size:0.9rem">
+          No attendance records found for this period.
+        </div>
+      </div>
+
+      <div class="no-print" style="margin-bottom:2rem">
+        <button class="btn btn-outline" onclick="resetReport()">← New Report</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ────────────────────────────────────────────────────────────────
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwwDSOnBWQuPwfsta5eObxZ-Lg3lTt-6SeX_bZO6vpTKjCZqPow3Ma5P5Zv30DSZ_D0/exec";
+// ──────────────────────────────────────────────────────────────────────────
+
+let reportData = null;
+
+// ── Auto-load on open
+window.addEventListener('DOMContentLoaded', loadStaff);
+
+// ── Load staff & year dropdowns ────────────────────────────────────────────
+async function loadStaff() {
+  try {
+    const data = await fetch(SCRIPT_URL + "?action=getStaff").then(r => r.json());
+    if (!data.success) return;
+    const sel = document.getElementById("sel-staff");
+    data.staff.forEach(s => {
+      const o = document.createElement("option"); o.value = s.name; o.textContent = s.name; sel.appendChild(o);
+    });
+  } catch(e) {}
+
+  // Populate year dropdown: current year and 2 years back
+  const yearSel = document.getElementById("sel-year");
+  const cur = new Date().getFullYear();
+  for (let y = cur; y >= cur - 2; y--) {
+    const o = document.createElement("option"); o.value = y; o.textContent = y; yearSel.appendChild(o);
+  }
+
+  // Default month to current
+  document.getElementById("sel-month").value = String(new Date().getMonth()+1).padStart(2,"0");
+}
+
+// ── Generate report ────────────────────────────────────────────────────────
+async function generateReport() {
+  const name  = document.getElementById("sel-staff").value;
+  const month = document.getElementById("sel-month").value;
+  const year  = document.getElementById("sel-year").value;
+
+  if (!name) { showAlert("report-alert","Please select a staff member.","err"); return; }
+
+  const btn = document.getElementById("btn-generate");
+  btn.innerHTML = '<span class="spinner"></span> Loading...'; btn.disabled = true;
+  clearAlert("report-alert");
+
+  try {
+    const url  = SCRIPT_URL + "?action=getMonthlyReport&name=" + encodeURIComponent(name) + "&month=" + month + "&year=" + year;
+    const data = await fetch(url).then(r => r.json());
+    if (!data.success) throw new Error(data.error);
+    reportData = data.report;
+    renderReport(reportData, month, year);
+  } catch(e) {
+    showAlert("report-alert", "Error: " + e.message, "err");
+  }
+
+  btn.innerHTML = "Generate Report"; btn.disabled = false;
+}
+
+const MONTHS = ["","January","February","March","April","May","June","July","August","September","October","November","December"];
+
+function renderReport(r, month, year) {
+  document.getElementById("rpt-name").textContent   = r.name;
+  document.getElementById("rpt-period").textContent = MONTHS[parseInt(month)] + " " + year;
+
+  const totalDays = r.daysPresent + r.daysAbsent + r.daysIncomplete;
+  document.getElementById("rpt-present").textContent     = r.daysPresent;
+  document.getElementById("rpt-present-sub").textContent = "out of " + totalDays + " recorded days";
+  document.getElementById("rpt-absent").textContent      = r.daysAbsent;
+  document.getElementById("rpt-absent-sub").textContent  = r.daysIncomplete > 0 ? r.daysIncomplete + " incomplete" : "";
+
+  const totalHM = secToHM(r.totalSeconds);
+  const avgHM   = secToHM(r.avgSeconds);
+  document.getElementById("rpt-total").textContent = totalHM.h + "h " + totalHM.m + "m";
+  document.getElementById("rpt-avg").textContent   = avgHM.h   + "h " + avgHM.m   + "m";
+
+  const tbody = document.getElementById("rpt-body");
+  tbody.innerHTML = "";
+
+  if (r.days.length === 0) {
+    document.getElementById("rpt-table").classList.add("hidden");
+    document.getElementById("rpt-empty").classList.remove("hidden");
+  } else {
+    document.getElementById("rpt-table").classList.remove("hidden");
+    document.getElementById("rpt-empty").classList.add("hidden");
+    r.days.forEach(day => {
+      const tr = document.createElement("tr");
+      const dur = day.durationSec !== null ? (() => { const hm = secToHM(day.durationSec); return hm.h + "h " + hm.m + "m"; })() : "—";
+      const pillClass = day.status === "Present" ? "pill-present" : day.status === "Absent" ? "pill-absent" : "pill-incomplete";
+      tr.innerHTML =
+        "<td>" + formatDisplayDate(day.date) + "</td>" +
+        "<td><span class='status-pill " + pillClass + "'>" + day.status + "</span></td>" +
+        "<td>" + (day.inTime  || "—") + "</td>" +
+        "<td>" + (day.outTime || "—") + "</td>" +
+        "<td>" + dur + "</td>";
+      tbody.appendChild(tr);
+    });
+  }
+
+  document.getElementById("report-output").classList.remove("hidden");
+  document.getElementById("report-output").scrollIntoView({ behavior: "smooth" });
+}
+
+function formatDisplayDate(dateStr) {
+  // DD/MM/YYYY → "Mon, 11 May"
+  try {
+    const p = dateStr.split("/");
+    const d = new Date(p[2], p[1]-1, p[0]);
+    return d.toLocaleDateString("en-IN", { weekday:"short", day:"numeric", month:"short" });
+  } catch { return dateStr; }
+}
+
+function secToHM(sec) {
+  if (!sec || sec < 0) return { h: 0, m: 0 };
+  return { h: Math.floor(sec/3600), m: Math.floor((sec%3600)/60) };
+}
+
+function resetReport() {
+  document.getElementById("report-output").classList.add("hidden");
+  reportData = null;
+}
+
+// ── PDF download ───────────────────────────────────────────────────────────
+function downloadPDF() {
+  window.print();
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function showAlert(id, msg, type) {
+  const el = document.getElementById(id); el.textContent = msg;
+  el.className = "alert alert-" + type; el.classList.remove("hidden");
+}
+function clearAlert(id) { const el = document.getElementById(id); el.classList.add("hidden"); el.textContent = ""; }
+</script>
+</body>
+</html>
